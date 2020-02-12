@@ -38,21 +38,18 @@ namespace DmvAppointmentScheduler
         }
         static void Calculation(CustomerList customers, TellerList tellers)
         {
-            List<Teller> tellerList = tellers.Teller.ToList();
+            List<Teller> tellerList = tellers.Teller.OrderBy(t => t.multiplier).ToList();
 
             foreach(Customer customer in customers.Customer) {
-                List<Teller> unmatchedTellers = tellerList.Where(t => t.specialtyType != customer.type).OrderBy(t => t.multiplier).ToList(); //List of all tellers whose speciality type does not match with customer type
-                List<Teller> matchedTellers = tellerList.Where(t => t.specialtyType == customer.type).OrderBy(t => t.multiplier).ToList(); //List of all tellers whose speciality type match with customer type
-           
                 var teller = tellerList.Where(t => t.specialtyType == customer.type).Count() !=0 ?
-                                matchedTellers.FirstOrDefault() : unmatchedTellers.FirstOrDefault();
+                                tellerList.Where(t => t.specialtyType == customer.type).FirstOrDefault() : tellerList.FirstOrDefault();
                 
                 var appointment = new Appointment(customer, teller);
                 appointmentList.Add(appointment);
                 tellerList = tellerList.Where(t => t.id != teller.id).ToList(); // Removes the teller from list once it is assigned to customer
 
-                if(tellerList.Count()==0) {        //When all the tellers are assigned in first loop the list is refreshed for new assignment
-                    tellerList = tellers.Teller.ToList();
+                if(tellerList.Count()==0) {  //When all the tellers are assigned in first loop the list is refreshed for new assignment
+                    tellerList = tellers.Teller.OrderBy(t => t.multiplier).ToList();
                 }
             }
         }
